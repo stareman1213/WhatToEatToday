@@ -249,13 +249,14 @@ input { font-family: inherit; }
     <div style="padding: 26px 26px 0; display: flex; flex-direction: column; gap: 10px">
       <div onClick="{{ goAdd }}" style="background: #2E2B26; padding: 14px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.24em; color: #FAF8F4; cursor: pointer">新增店家</div>
       <div style="display: flex; gap: 10px">
-        <div onClick="{{ exportData }}" style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">匯出備份</div>
+        <div onClick="{{ resetCoins }}" style="flex: 1; border: 1px solid #C25B45; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #C25B45; cursor: pointer">重置扭蛋次數</div>
+      <div onClick="{{ exportData }}" style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">匯出備份</div>
         <label style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">
           匯入備份
           <input type="file" accept="application/json" onChange="{{ importData }}" style="display: none">
         </label>
       </div>
-      <div style="font-size: 11px; color: #B5B0A3; letter-spacing: 0.05em; line-height: 1.8">資料只存在這支手機的瀏覽器裡。清除瀏覽資料會一併消失，建議每週匯出一次。</div>
+      <div style="font-size: 11px; color: #B5B0A3; letter-spacing: 0.05em; line-height: 1.8">資料只存在這支手機的瀏覽器裡。清除瀏覽資料會一併消失，建議每週匯出一次。「重置扭蛋次數」把三餐的硬幣各補回 5 枚，測試用。</div>
     </div>
   </sc-if>
 
@@ -555,6 +556,13 @@ class Component extends DCLogic {
 
   restore = (id) => () => this.patchStore(id, { frozenUntil: null, rejects: 0, returnedOnce: true });
 
+  resetCoins = () => {
+    const data = this.state.data;
+    this.save(Object.assign({}, data, {
+      coins: { date: today(), b: COINS_PER_SLOT, l: COINS_PER_SLOT, d: COINS_PER_SLOT },
+    }));
+  };
+
   exportData = () => {
     const blob = new Blob([JSON.stringify(this.state.data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -718,6 +726,7 @@ class Component extends DCLogic {
       storeList,
       hasFrozen: frozen.length > 0,
       frozenList,
+      resetCoins: this.resetCoins,
       exportData: this.exportData,
       importData: this.importData,
       formName: form.name,
