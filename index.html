@@ -384,6 +384,8 @@ class Component extends DCLogic {
     result: null,
     spins: 0,
     pickSlot: null,
+    sessionRejects: [],
+    lastPick: null,
     form: { name: '', tier: 1, meals: { b: false, l: true, d: true } },
     data: { stores: [], meals: [], coins: { date: today(), b: COINS_PER_SLOT, l: COINS_PER_SLOT, d: COINS_PER_SLOT } },
   };
@@ -439,7 +441,9 @@ class Component extends DCLogic {
     const t = today();
     const cap = CAPS[this.state.capIdx].max;
     const cd = this.slotDef(slot).cd;
+    const out = this.state.sessionRejects || [];
     return this.state.data.stores.filter((s) => {
+      if (out.indexOf(s.id) !== -1) return false;
       if (s.excluded || s.frozenUntil) return false;
       if (!s.meals || !s.meals[slot]) return false;
       if (s.verdict === 'no') return false;
@@ -469,9 +473,10 @@ class Component extends DCLogic {
     this.save(Object.assign({}, data, { coins }));
     this.setState({ phase: 'spin', result: null });
     this.timer = setTimeout(() => {
-      const p = this.eligible(this.state.slot);
+      let p = this.eligible(this.state.slot);
+      if (p.length > 1 && this.state.lastPick) p = p.filter((x) => x.id !== this.state.lastPick);
       const pick = p[Math.floor(Math.random() * p.length)];
-      this.setState((s) => ({ phase: 'dropped', result: pick ? pick.id : null, spins: s.spins + 1 }));
+      this.setState((s) => ({ phase: 'dropped', result: pick ? pick.id : null, lastPick: pick ? pick.id : s.lastPick, spins: s.spins + 1 }));
     }, 1500);
   };
 
@@ -496,7 +501,7 @@ class Component extends DCLogic {
     } else {
       this.patchStore(s.id, { rejects: n });
     }
-    this.setState({ phase: 'idle', result: null });
+    this.setState((st) => ({ phase: 'idle', result: null, sessionRejects: st.sessionRejects.concat([s.id]) }));
   };
 
   openPick = (slot) => () => this.setState({ view: 'pick', pickSlot: slot });
@@ -734,7 +739,7 @@ class Component extends DCLogic {
         label: sl.label,
         on: slot === sl.key,
         off: slot !== sl.key,
-        onPick: () => this.setState({ slot: sl.key, phase: 'idle', result: null }),
+        onPick: () => this.setState({ slot: sl.key, phase: 'idle', result: null, sessionRejects: [], lastPick: null }),
       })),
       capLabel: CAPS[capIdx].label,
       eligibleLine: pool.length + ' 家候選',
