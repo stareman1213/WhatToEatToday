@@ -42,6 +42,8 @@ input { font-family: inherit; }
 @keyframes shellL { to { transform: translate(-40px, 14px) rotate(-34deg); opacity: 0; } }
 @keyframes shellR { to { transform: translate(40px, 14px) rotate(34deg); opacity: 0; } }
 @keyframes fadeUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes capSquirm { 0%,100% { transform: translate(0,0) rotate(0deg); } 28% { transform: translate(1.6px,-2.6px) rotate(2.4deg); } 55% { transform: translate(-1.8px,1.4px) rotate(-2deg); } 80% { transform: translate(0.8px,2px) rotate(1.2deg); } }
+@keyframes capHop { 0%,88%,100% { transform: translateY(0) scale(1,1); } 91% { transform: translateY(0.6px) scale(1.06,0.92); } 95% { transform: translateY(-4.5px) scale(0.97,1.05); } 98% { transform: translateY(0.4px) scale(1.04,0.95); } }
 </style>
 </helmet>
 
@@ -64,7 +66,9 @@ input { font-family: inherit; }
             <div style="font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.14em; color: #9A9488; width: 26px">{{ row.label }}</div>
             <sc-if value="{{ row.empty }}" hint-placeholder-val="{{ true }}">
               <div style="flex: 1; font-size: 14px; color: #C4BFB2; letter-spacing: 0.06em">還沒記錄</div>
-              <div onClick="{{ row.onGacha }}" style="border: 1px solid #C9C3B6; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">扭蛋</div>
+              <sc-if value="{{ row.canGacha }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ row.onGacha }}" style="border: 1px solid #C9C3B6; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">扭蛋</div>
+              </sc-if>
               <div onClick="{{ row.onRecord }}" style="border: 1px solid #2E2B26; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #2E2B26; cursor: pointer">記錄</div>
             </sc-if>
             <sc-if value="{{ row.filled }}" hint-placeholder-val="{{ false }}">
@@ -162,6 +166,9 @@ input { font-family: inherit; }
           <g style="animation: {{ jitE }}; opacity: {{ opE }}"><circle cx="108" cy="102" r="14" fill="{{ colE }}" stroke="#3B2A20" stroke-width="1.1"/></g>
           <g style="animation: {{ jitF }}; opacity: {{ opF }}"><circle cx="140" cy="112" r="13" fill="{{ colF }}" stroke="#3B2A20" stroke-width="1.1"/></g>
           <g style="animation: {{ jitG }}; opacity: {{ opG }}"><circle cx="92" cy="82" r="13" fill="{{ colG }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitH }}; opacity: {{ opH }}"><circle cx="48" cy="106" r="12" fill="{{ colH }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitI }}; opacity: {{ opI }}"><circle cx="150" cy="116" r="12" fill="{{ colI }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitJ }}; opacity: {{ opJ }}"><circle cx="118" cy="66" r="12" fill="{{ colJ }}" stroke="#3B2A20" stroke-width="1.1"/></g>
         </g>
         <path d="M32 140 V88 A68 68 0 0 1 168 88 V140 Z" fill="url(#glassGrad)" stroke="#3B2A20" stroke-width="1.4"/>
         <path d="M52 118 A52 52 0 0 1 84 62" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" opacity="0.85"/>
@@ -245,7 +252,22 @@ input { font-family: inherit; }
       </div>
     </sc-if>
 
-    <div style="padding: 26px 26px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="padding: 26px 26px 0; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-size: 12px; color: #9A9488; letter-spacing: 0.08em; white-space: nowrap">扭蛋開放的餐別</div>
+        <div style="flex: 1; display: flex; gap: 8px">
+          <sc-for list="{{ slotToggles }}" as="g" hint-placeholder-count="3">
+            <div onClick="{{ g.onToggle }}" style="flex: 1; cursor: pointer">
+              <sc-if value="{{ g.on }}" hint-placeholder-val="{{ true }}">
+                <div style="background: #2E2B26; padding: 8px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.12em; color: #FAF8F4">{{ g.label }}</div>
+              </sc-if>
+              <sc-if value="{{ g.off }}" hint-placeholder-val="{{ false }}">
+                <div style="border: 1px solid #E6E1D8; padding: 7px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.12em; color: #C4BFB2">{{ g.label }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
       <div onClick="{{ goAdd }}" style="background: #2E2B26; padding: 14px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.24em; color: #FAF8F4; cursor: pointer">新增店家</div>
       <div style="display: flex; gap: 10px">
         <div onClick="{{ resetCoins }}" style="flex: 1; border: 1px solid #C25B45; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #C25B45; cursor: pointer">重置扭蛋次數</div>
@@ -353,7 +375,8 @@ const SHELL = [
   ['#EBD3A6', '#D6B981'],
   ['#D9B8B0', '#C09A91'],
 ];
-const JIT = [[0.44, 0], [0.52, 0.09], [0.47, 0.05], [0.58, 0.13], [0.5, 0.02], [0.55, 0.17], [0.62, 0.07]];
+const JIT = [[0.44, 0], [0.52, 0.09], [0.47, 0.05], [0.58, 0.13], [0.5, 0.02], [0.55, 0.17], [0.62, 0.07], [0.49, 0.11], [0.56, 0.04], [0.6, 0.15]];
+const CAP_KEYS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 const COINS_PER_SLOT = 5;
 const FREEZE_DAYS = 15;
 
@@ -403,6 +426,24 @@ class Component extends DCLogic {
     return data;
   }
 
+  visSlots() {
+    const h = this.state.data.hiddenSlots || {};
+    const v = SLOTS.filter((s) => !h[s.key]);
+    return v.length ? v : SLOTS;
+  }
+
+  toggleSlotVisible = (k) => () => {
+    const data = this.state.data;
+    const hiddenSlots = Object.assign({}, data.hiddenSlots || {});
+    hiddenSlots[k] = !hiddenSlots[k];
+    if (Object.values(hiddenSlots).every(Boolean)) return;
+    this.save(Object.assign({}, data, { hiddenSlots }));
+    if (hiddenSlots[this.state.slot]) {
+      const first = SLOTS.find((s) => !hiddenSlots[s.key]);
+      this.setState({ slot: first.key, phase: 'idle', result: null });
+    }
+  };
+
   thaw(data) {
     const t = today();
     data.stores = (data.stores || []).map((s) => {
@@ -447,7 +488,11 @@ class Component extends DCLogic {
   goToday = this.go('today');
   goStores = this.go('stores');
   goAdd = () => this.setState({ view: 'add', form: { name: '', tier: 1, meals: { b: false, l: true, d: true } } });
-  goGacha = () => this.setState({ view: 'gacha', phase: 'idle', result: null });
+  goGacha = () => {
+    const vis = this.visSlots();
+    const slot = vis.some((s) => s.key === this.state.slot) ? this.state.slot : vis[0].key;
+    this.setState({ view: 'gacha', slot, phase: 'idle', result: null });
+  };
   cancelAdd = () => this.setState({ view: this.state.data.stores.length ? 'stores' : 'today' });
   cycleCap = () => this.setState((s) => ({ capIdx: (s.capIdx + 1) % CAPS.length, phase: 'idle', result: null }));
 
@@ -588,10 +633,16 @@ class Component extends DCLogic {
     const { phase, spins } = this.state;
     const spinning = phase === 'spin';
     const dropped = phase === 'dropped' || phase === 'open';
-    const shown = Math.max(0, Math.min(7, poolCount) - (dropped ? 1 : 0));
+    const shown = Math.max(0, Math.min(10, poolCount) - (dropped ? 1 : 0));
     const out = {};
-    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((k, i) => {
-      out['jit' + k] = spinning ? 'capJitter ' + JIT[i][0] + 's ease-in-out ' + JIT[i][1] + 's 3' : 'none';
+    const crowded = poolCount > 10;
+    const lively = poolCount >= 15;
+    CAP_KEYS.forEach((k, i) => {
+      const idle = crowded
+        ? 'capSquirm ' + ((lively ? 2.1 : 3.2) + i * 0.28) + 's ease-in-out ' + (i * 0.37) + 's infinite' +
+          (i % 3 === 0 ? ', capHop ' + ((lively ? 4.6 : 7.5) + i * 0.9) + 's ease-in-out ' + (i * 1.3) + 's infinite' : '')
+        : 'none';
+      out['jit' + k] = spinning ? 'capJitter ' + JIT[i][0] + 's ease-in-out ' + JIT[i][1] + 's 3' : idle;
       out['op' + k] = i < shown ? 1 : 0;
       out['col' + k] = SHELL[(i + spins) % SHELL.length][0];
     });
@@ -620,12 +671,14 @@ class Component extends DCLogic {
     const res = result ? this.storeById(result) : null;
     const titles = { today: '今日記錄', gacha: '今天吃什麼', stores: '我的店家', add: '新增店家', pick: '選一家店' };
 
+    const hidden = data.hiddenSlots || {};
     const todayRows = SLOTS.map((sl) => {
       const m = this.mealFor(sl.key);
       const st = m ? this.storeById(m.storeId) : null;
       return {
         label: sl.short,
         empty: !st,
+        canGacha: !hidden[sl.key],
         filled: !!st,
         name: st ? st.name : '',
         sub: st ? TIERS[st.tier].label + (st.verdict === 'yes' ? ' · 還會再吃' : st.verdict === 'maybe' ? ' · 看情況' : st.verdict === 'no' ? ' · 不會再吃' : '') : '',
@@ -703,7 +756,13 @@ class Component extends DCLogic {
       poolEmpty: !active.length,
       pickHint: this.slotDef(pickSl).label + '　選一家',
       pickList,
-      slotTabs: SLOTS.map((sl) => ({
+      slotToggles: SLOTS.map((sl) => ({
+        label: sl.label,
+        on: !hidden[sl.key],
+        off: !!hidden[sl.key],
+        onToggle: this.toggleSlotVisible(sl.key),
+      })),
+      slotTabs: this.visSlots().map((sl) => ({
         label: sl.label,
         on: slot === sl.key,
         off: slot !== sl.key,
