@@ -66,9 +66,7 @@ input { font-family: inherit; }
             <div style="font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.14em; color: #9A9488; width: 26px">{{ row.label }}</div>
             <sc-if value="{{ row.empty }}" hint-placeholder-val="{{ true }}">
               <div style="flex: 1; font-size: 14px; color: #C4BFB2; letter-spacing: 0.06em">還沒記錄</div>
-              <sc-if value="{{ row.canGacha }}" hint-placeholder-val="{{ true }}">
-                <div onClick="{{ row.onGacha }}" style="border: 1px solid #C9C3B6; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">扭蛋</div>
-              </sc-if>
+              <div onClick="{{ row.onGacha }}" style="border: 1px solid #C9C3B6; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">扭蛋</div>
               <div onClick="{{ row.onRecord }}" style="border: 1px solid #2E2B26; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #2E2B26; cursor: pointer">記錄</div>
             </sc-if>
             <sc-if value="{{ row.filled }}" hint-placeholder-val="{{ false }}">
@@ -253,28 +251,13 @@ input { font-family: inherit; }
     </sc-if>
 
     <div style="padding: 26px 26px 0; display: flex; flex-direction: column; gap: 12px">
-      <div style="display: flex; align-items: center; gap: 12px">
-        <div style="font-size: 12px; color: #9A9488; letter-spacing: 0.08em; white-space: nowrap">扭蛋開放的餐別</div>
-        <div style="flex: 1; display: flex; gap: 8px">
-          <sc-for list="{{ slotToggles }}" as="g" hint-placeholder-count="3">
-            <div onClick="{{ g.onToggle }}" style="flex: 1; cursor: pointer">
-              <sc-if value="{{ g.on }}" hint-placeholder-val="{{ true }}">
-                <div style="background: #2E2B26; padding: 8px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.12em; color: #FAF8F4">{{ g.label }}</div>
-              </sc-if>
-              <sc-if value="{{ g.off }}" hint-placeholder-val="{{ false }}">
-                <div style="border: 1px solid #E6E1D8; padding: 7px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.12em; color: #C4BFB2">{{ g.label }}</div>
-              </sc-if>
-            </div>
-          </sc-for>
-        </div>
-      </div>
       <div onClick="{{ goAdd }}" style="background: #2E2B26; padding: 14px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.24em; color: #FAF8F4; cursor: pointer">新增店家</div>
       <div style="display: flex; gap: 10px">
         <div onClick="{{ resetCoins }}" style="flex: 1; border: 1px solid #C25B45; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #C25B45; cursor: pointer">重置扭蛋次數</div>
       <div onClick="{{ exportData }}" style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">匯出備份</div>
-        <label style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">
+        <label style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer; position: relative; overflow: hidden">
           匯入備份
-          <input type="file" accept="application/json" onChange="{{ importData }}" style="display: none">
+          <input type="file" accept=".json,application/json,text/plain" onChange="{{ importData }}" style="position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer">
         </label>
       </div>
       <div style="font-size: 11px; color: #B5B0A3; letter-spacing: 0.05em; line-height: 1.8">資料只存在這支手機的瀏覽器裡。清除瀏覽資料會一併消失，建議每週匯出一次。「重置扭蛋次數」把三餐的硬幣各補回 5 枚，測試用。</div>
@@ -426,24 +409,6 @@ class Component extends DCLogic {
     return data;
   }
 
-  visSlots() {
-    const h = this.state.data.hiddenSlots || {};
-    const v = SLOTS.filter((s) => !h[s.key]);
-    return v.length ? v : SLOTS;
-  }
-
-  toggleSlotVisible = (k) => () => {
-    const data = this.state.data;
-    const hiddenSlots = Object.assign({}, data.hiddenSlots || {});
-    hiddenSlots[k] = !hiddenSlots[k];
-    if (Object.values(hiddenSlots).every(Boolean)) return;
-    this.save(Object.assign({}, data, { hiddenSlots }));
-    if (hiddenSlots[this.state.slot]) {
-      const first = SLOTS.find((s) => !hiddenSlots[s.key]);
-      this.setState({ slot: first.key, phase: 'idle', result: null });
-    }
-  };
-
   thaw(data) {
     const t = today();
     data.stores = (data.stores || []).map((s) => {
@@ -488,11 +453,7 @@ class Component extends DCLogic {
   goToday = this.go('today');
   goStores = this.go('stores');
   goAdd = () => this.setState({ view: 'add', form: { name: '', tier: 1, meals: { b: false, l: true, d: true } } });
-  goGacha = () => {
-    const vis = this.visSlots();
-    const slot = vis.some((s) => s.key === this.state.slot) ? this.state.slot : vis[0].key;
-    this.setState({ view: 'gacha', slot, phase: 'idle', result: null });
-  };
+  goGacha = () => this.setState({ view: 'gacha', phase: 'idle', result: null });
   cancelAdd = () => this.setState({ view: this.state.data.stores.length ? 'stores' : 'today' });
   cycleCap = () => this.setState((s) => ({ capIdx: (s.capIdx + 1) % CAPS.length, phase: 'idle', result: null }));
 
@@ -607,11 +568,26 @@ class Component extends DCLogic {
     }));
   };
 
-  exportData = () => {
-    const blob = new Blob([JSON.stringify(this.state.data, null, 2)], { type: 'application/json' });
+  exportData = async () => {
+    const json = JSON.stringify(this.state.data, null, 2);
+    const fname = 'gacha-shokudo-' + today() + '.json';
+    try {
+      const file = new File([json], fname, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: fname });
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard.writeText(json);
+      alert('已把備份內容複製到剪貼簿，請貼到備忘錄或檔案保存。');
+      return;
+    } catch (e) {}
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'gacha-shokudo-' + today() + '.json';
+    a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    a.download = fname;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
@@ -671,14 +647,12 @@ class Component extends DCLogic {
     const res = result ? this.storeById(result) : null;
     const titles = { today: '今日記錄', gacha: '今天吃什麼', stores: '我的店家', add: '新增店家', pick: '選一家店' };
 
-    const hidden = data.hiddenSlots || {};
     const todayRows = SLOTS.map((sl) => {
       const m = this.mealFor(sl.key);
       const st = m ? this.storeById(m.storeId) : null;
       return {
         label: sl.short,
         empty: !st,
-        canGacha: !hidden[sl.key],
         filled: !!st,
         name: st ? st.name : '',
         sub: st ? TIERS[st.tier].label + (st.verdict === 'yes' ? ' · 還會再吃' : st.verdict === 'maybe' ? ' · 看情況' : st.verdict === 'no' ? ' · 不會再吃' : '') : '',
@@ -756,13 +730,7 @@ class Component extends DCLogic {
       poolEmpty: !active.length,
       pickHint: this.slotDef(pickSl).label + '　選一家',
       pickList,
-      slotToggles: SLOTS.map((sl) => ({
-        label: sl.label,
-        on: !hidden[sl.key],
-        off: !!hidden[sl.key],
-        onToggle: this.toggleSlotVisible(sl.key),
-      })),
-      slotTabs: this.visSlots().map((sl) => ({
+      slotTabs: SLOTS.map((sl) => ({
         label: sl.label,
         on: slot === sl.key,
         off: slot !== sl.key,
