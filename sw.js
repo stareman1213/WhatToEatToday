@@ -1,4 +1,4 @@
-const CACHE = 'gachashokudo-v3';
+const CACHE = 'gachashokudo-v4';
 const CORE = ['./', './index.html', './support.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

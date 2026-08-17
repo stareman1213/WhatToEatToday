@@ -212,7 +212,6 @@ input { font-family: inherit; }
     <div style="padding: 0 26px; display: flex; flex-direction: column">
       <sc-for list="{{ storeList }}" as="s" hint-placeholder-count="4">
         <div style="padding: 14px 0; border-top: 1px solid #E6E1D8; display: flex; align-items: center; gap: 14px">
-          <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 19px; color: #C9C3B6; width: 26px">{{ s.count }}</div>
           <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
             <div style="font-weight: 500; font-size: 15.5px; letter-spacing: 0.04em; color: #2E2B26">{{ s.name }}</div>
             <div style="font-size: 11.5px; color: #9A9488; letter-spacing: 0.06em">{{ s.sub }}</div>
@@ -646,12 +645,13 @@ class Component extends DCLogic {
       .map((s) => ({ name: s.name, tier: TIERS[s.tier].label, onPick: this.recordManual(pickSl, s.id) }));
 
     const storeList = active.filter((s) => !s.frozenUntil).map((s) => {
-      const cd = s.lastAte ? Math.max(0, 7 - dayGap(s.lastAte, t)) : 0;
-      const mealTags = SLOTS.filter((x) => s.meals && s.meals[x.key]).map((x) => x.short).join('／');
+      const mySlots = SLOTS.filter((x) => s.meals && s.meals[x.key]);
+      const maxCd = mySlots.reduce((a, x) => Math.max(a, x.cd), 0);
+      const cd = s.lastAte ? Math.max(0, maxCd - dayGap(s.lastAte, t)) : 0;
+      const mealTags = mySlots.map((x) => x.short).join('／');
       return {
-        count: String(s.eaten || 0).padStart(2, '0'),
         name: s.name,
-        sub: TIERS[s.tier].label + ' · ' + (mealTags || '未指定餐別'),
+        sub: '吃過 ' + (s.eaten || 0) + ' 次 · ' + TIERS[s.tier].label + ' · ' + (mealTags || '未指定餐別'),
         hasTag: !!s.lastAte && cd > 0,
         tag: '冷卻 ' + cd + ' 天內',
         onDelete: this.deleteStore(s.id),
