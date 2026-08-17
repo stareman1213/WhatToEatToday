@@ -1,5 +1,5 @@
-const CACHE = 'gachashokudo-v1';
-const CORE = ['./', './index.html', './support.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'gachashokudo-v2';
+const CORE = ['./', './index.html', './support.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
