@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>今天吃什麼</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="吃什麼">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" href="./icon-192.png">
+<script src="./support.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  });
+}
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Zen+Old+Mincho:wght@400&family=Zen+Kaku+Gothic+New:wght@400;500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; background: #EFEDE7; font-family: 'Zen Kaku Gothic New', 'Noto Sans TC', sans-serif; color: #2E2B26; -webkit-font-smoothing: antialiased; }
+a { color: #C25B45; text-decoration: none; }
+a:hover { color: #A0402E; }
+input { font-family: inherit; }
+@keyframes softShake { 0%,100% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-1.5px,0.5px) rotate(-0.5deg); } 60% { transform: translate(1.5px,-0.5px) rotate(0.5deg); } }
+@keyframes capJitter { 0%,100% { transform: translate(0,0); } 25% { transform: translate(3px,-5px); } 50% { transform: translate(-4px,2px); } 75% { transform: translate(2px,4px); } }
+@keyframes knobTurn { from { transform: rotate(0deg); } to { transform: rotate(540deg); } }
+@keyframes capDrop { 0% { transform: translateY(-92px) scale(0.7); opacity: 0; } 55% { transform: translateY(5px) scale(1); opacity: 1; } 72% { transform: translateY(-7px) scale(0.98); } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+@keyframes capGlow { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes shellL { to { transform: translate(-40px, 14px) rotate(-34deg); opacity: 0; } }
+@keyframes shellR { to { transform: translate(40px, 14px) rotate(34deg); opacity: 0; } }
+@keyframes fadeUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; display: flex; justify-content: center; background: #EFEDE7">
+<div style="width: 100%; max-width: 430px; min-height: 100vh; background: #FAF8F4; display: flex; flex-direction: column; position: relative">
+
+  <div style="padding: 22px 26px 18px; display: flex; align-items: flex-end; gap: 12px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 7px">
+      <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: 0.26em; color: #9A9488">{{ dateLine }}</div>
+      <div style="font-family: 'Zen Old Mincho', serif; font-size: 25px; letter-spacing: 0.14em; line-height: 1.2; color: #2E2B26">{{ viewTitle }}</div>
+    </div>
+    <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: 0.18em; color: #9A9488">{{ poolLine }}</div>
+  </div>
+
+  <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+    <div style="padding: 0 26px 20px; display: flex; flex-direction: column">
+      <sc-for list="{{ todayRows }}" as="row" hint-placeholder-count="3">
+        <div style="padding: 16px 0; border-top: 1px solid #E6E1D8; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <div style="font-family: 'Zen Old Mincho', serif; font-size: 13px; letter-spacing: 0.14em; color: #9A9488; width: 26px">{{ row.label }}</div>
+            <sc-if value="{{ row.empty }}" hint-placeholder-val="{{ true }}">
+              <div style="flex: 1; font-size: 14px; color: #C4BFB2; letter-spacing: 0.06em">還沒記錄</div>
+              <div onClick="{{ row.onGacha }}" style="border: 1px solid #C9C3B6; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">扭蛋</div>
+              <div onClick="{{ row.onRecord }}" style="border: 1px solid #2E2B26; padding: 6px 11px; font-family: 'Zen Old Mincho', serif; font-size: 12.5px; letter-spacing: 0.1em; color: #2E2B26; cursor: pointer">記錄</div>
+            </sc-if>
+            <sc-if value="{{ row.filled }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+                <div style="font-weight: 500; font-size: 15.5px; letter-spacing: 0.03em; color: #2E2B26">{{ row.name }}</div>
+                <div style="font-size: 11.5px; color: #9A9488; letter-spacing: 0.06em">{{ row.sub }}</div>
+              </div>
+              <div onClick="{{ row.onClear }}" style="font-size: 12px; color: #C4BFB2; cursor: pointer; letter-spacing: 0.06em">取消</div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ row.askVerdict }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 8px; padding-left: 40px">
+              <div onClick="{{ row.onYes }}" style="flex: 1; border: 1px solid #2E2B26; padding: 9px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 14px; letter-spacing: 0.12em; color: #2E2B26; cursor: pointer">會再吃</div>
+              <div onClick="{{ row.onMaybe }}" style="flex: 1; border: 1px solid #C9C3B6; padding: 9px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 14px; letter-spacing: 0.12em; color: #6E6A5F; cursor: pointer">看情況</div>
+              <div onClick="{{ row.onNo }}" style="flex: 1; border: 1px solid #C9C3B6; padding: 9px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 14px; letter-spacing: 0.12em; color: #6E6A5F; cursor: pointer">不會</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div style="border-top: 1px solid #E6E1D8"></div>
+    </div>
+
+    <div style="padding: 6px 26px 0; display: flex; align-items: baseline; gap: 10px">
+      <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 34px; line-height: 1; color: #2E2B26">{{ totalMeals }}</div>
+      <div style="font-size: 11.5px; color: #9A9488; letter-spacing: 0.08em">餐已記錄</div>
+      <div style="flex: 1; text-align: right; font-size: 11.5px; color: #9A9488; letter-spacing: 0.08em">{{ streakLine }}</div>
+    </div>
+
+    <sc-if value="{{ poolEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="margin: 26px 26px 0; border: 1px solid #C9C3B6; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.12em">先加幾家店</div>
+        <div style="font-size: 12.5px; line-height: 1.9; color: #6E6A5F; letter-spacing: 0.04em">扭蛋是從你自己的店裡抽的，所以池子空的時候轉不出東西。建議先加 5 到 8 家平常會去的。</div>
+        <div onClick="{{ goAdd }}" style="background: #2E2B26; padding: 13px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.2em; color: #FAF8F4; cursor: pointer">新增第一家店</div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ isPick }}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 0 26px 10px; font-family: 'Jost', sans-serif; font-weight: 300; font-size: 10.5px; letter-spacing: 0.26em; color: #9A9488">{{ pickHint }}</div>
+    <div style="padding: 0 26px; display: flex; flex-direction: column">
+      <sc-for list="{{ pickList }}" as="s" hint-placeholder-count="4">
+        <div onClick="{{ s.onPick }}" style="padding: 14px 0; border-top: 1px solid #E6E1D8; display: flex; align-items: center; gap: 12px; cursor: pointer">
+          <div style="flex: 1; font-size: 15.5px; letter-spacing: 0.04em; color: #2E2B26">{{ s.name }}</div>
+          <div style="font-family: 'Jost', sans-serif; font-size: 12.5px; color: #9A9488">{{ s.tier }}</div>
+        </div>
+      </sc-for>
+      <div style="border-top: 1px solid #E6E1D8"></div>
+    </div>
+    <div style="padding: 22px 26px 0; display: flex; gap: 10px">
+      <div onClick="{{ goAdd }}" style="flex: 1; border: 1px solid #2E2B26; padding: 13px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.16em; color: #2E2B26; cursor: pointer">新增店家</div>
+      <div onClick="{{ goToday }}" style="border: 1px solid #C9C3B6; padding: 13px 20px; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.1em; color: #6E6A5F; cursor: pointer">返回</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isGacha }}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 0 26px 4px; display: flex; gap: 8px">
+      <sc-for list="{{ slotTabs }}" as="t" hint-placeholder-count="3">
+        <div onClick="{{ t.onPick }}" style="flex: 1; cursor: pointer">
+          <sc-if value="{{ t.on }}" hint-placeholder-val="{{ true }}">
+            <div style="background: #2E2B26; padding: 10px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 14.5px; letter-spacing: 0.14em; color: #FAF8F4">{{ t.label }}</div>
+          </sc-if>
+          <sc-if value="{{ t.off }}" hint-placeholder-val="{{ false }}">
+            <div style="border: 1px solid #E6E1D8; padding: 9px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 14.5px; letter-spacing: 0.14em; color: #9A9488">{{ t.label }}</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="padding: 14px 26px 0; display: flex; align-items: center; gap: 12px">
+      <div onClick="{{ cycleCap }}" style="border-bottom: 1px solid #C9C3B6; padding-bottom: 4px; font-family: 'Jost', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: #2E2B26; cursor: pointer">{{ capLabel }}</div>
+      <div style="flex: 1; font-size: 11.5px; color: #9A9488; letter-spacing: 0.06em">{{ eligibleLine }}</div>
+      <div style="display: flex; align-items: baseline; gap: 3px">
+        <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 21px; line-height: 1; color: #C25B45">{{ coinsLeft }}</div>
+        <div style="font-size: 11px; color: #9A9488">枚</div>
+      </div>
+    </div>
+
+    <div onClick="{{ advance }}" style="display: flex; justify-content: center; padding: 4px 0 0; cursor: pointer">
+      <svg viewBox="0 0 200 316" width="248" height="392" style="animation: {{ bodyAnim }}">
+        <defs>
+          <clipPath id="dome"><path d="M32 140 V88 A68 68 0 0 1 168 88 V140 Z"/></clipPath>
+          <linearGradient id="glassGrad" x1="0" y1="0" x2="0.6" y2="1">
+            <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+            <stop offset="0.55" stop-color="#FFF3E2" stop-opacity="0.5"/>
+            <stop offset="1" stop-color="#F0C9A2" stop-opacity="0.6"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="100" cy="302" rx="66" ry="7" fill="#3B2A20" opacity="0.08"/>
+        <g clip-path="url(#dome)">
+          <rect x="32" y="80" width="136" height="62" fill="#FFF6EA"/>
+          <g style="animation: {{ jitA }}; opacity: {{ opA }}"><circle cx="60" cy="126" r="15" fill="{{ colA }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitB }}; opacity: {{ opB }}"><circle cx="92" cy="132" r="15" fill="{{ colB }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitC }}; opacity: {{ opC }}"><circle cx="124" cy="126" r="15" fill="{{ colC }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitD }}; opacity: {{ opD }}"><circle cx="76" cy="104" r="14" fill="{{ colD }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitE }}; opacity: {{ opE }}"><circle cx="108" cy="102" r="14" fill="{{ colE }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitF }}; opacity: {{ opF }}"><circle cx="140" cy="112" r="13" fill="{{ colF }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+          <g style="animation: {{ jitG }}; opacity: {{ opG }}"><circle cx="92" cy="82" r="13" fill="{{ colG }}" stroke="#3B2A20" stroke-width="1.1"/></g>
+        </g>
+        <path d="M32 140 V88 A68 68 0 0 1 168 88 V140 Z" fill="url(#glassGrad)" stroke="#3B2A20" stroke-width="1.4"/>
+        <path d="M52 118 A52 52 0 0 1 84 62" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" opacity="0.85"/>
+        <rect x="28" y="140" width="144" height="152" rx="12" fill="#FFFBF2" stroke="#3B2A20" stroke-width="1.4"/>
+        <path d="M28 140 h144" stroke="#C08A3E" stroke-width="5" stroke-linecap="round"/>
+        <rect x="60" y="153" width="80" height="24" rx="12" fill="#C2452F"/>
+        <text x="100" y="169.5" text-anchor="middle" font-family="'Zen Old Mincho', serif" font-size="12" letter-spacing="4" fill="#FFF3E2">扭蛋</text>
+        <rect x="49" y="196" width="7" height="20" rx="3.5" fill="#3B2A20" opacity="0.85"/>
+        <text x="52.5" y="228" text-anchor="middle" font-family="'Jost', sans-serif" font-size="7.5" letter-spacing="1" fill="#B08E6C">COIN</text>
+        <g style="transform-box: fill-box; transform-origin: center; animation: {{ knobAnim }}">
+          <circle cx="126" cy="206" r="19" fill="#FFF3E2" stroke="#3B2A20" stroke-width="1.4"/>
+          <circle cx="126" cy="206" r="13" fill="none" stroke="#E0B98F" stroke-width="1"/>
+          <rect x="117" y="203.2" width="18" height="5.6" rx="2.8" fill="#3B2A20"/>
+        </g>
+        <path d="M52 240 h96 a6 6 0 0 1 6 6 v34 a6 6 0 0 1 -6 6 h-96 a6 6 0 0 1 -6 -6 v-34 a6 6 0 0 1 6 -6 z" fill="#F7E3CC" stroke="#3B2A20" stroke-width="1.4"/>
+        <path d="M34 292 h132" stroke="#C2452F" stroke-width="11" stroke-linecap="round"/>
+        <g style="animation: {{ dropAnim }}; opacity: {{ capsuleOp }}">
+          <g style="animation: {{ shellLAnim }}"><path d="M78 264 a22 22 0 0 1 44 0 z" fill="{{ dropTop }}" stroke="#3B2A20" stroke-width="1.3"/></g>
+          <g style="animation: {{ shellRAnim }}"><path d="M78 265 a22 22 0 0 0 44 0 z" fill="{{ dropBot }}" stroke="#3B2A20" stroke-width="1.3"/></g>
+          <g style="animation: {{ shellLAnim }}"><rect x="77" y="261.5" width="46" height="4" rx="2" fill="#3B2A20"/></g>
+        </g>
+      </svg>
+    </div>
+
+    <sc-if value="{{ hasResult }}" hint-placeholder-val="{{ true }}">
+      <div style="margin: 0 26px; padding-top: 16px; border-top: 1px solid #C9C3B6; display: flex; flex-direction: column; gap: 11px; animation: fadeUp 0.45s cubic-bezier(.2,.7,.3,1) both">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div style="font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: 0.18em; color: #C25B45">{{ rTag }}</div>
+          <div style="flex: 1; height: 1px; background: #E6E1D8"></div>
+          <div style="font-size: 11px; color: #9A9488; letter-spacing: 0.06em">{{ rTimes }}</div>
+        </div>
+        <div style="font-family: 'Zen Old Mincho', serif; font-size: 26px; letter-spacing: 0.08em; line-height: 1.3; color: #2E2B26">{{ rName }}</div>
+        <div style="font-size: 12.5px; color: #6E6A5F; letter-spacing: 0.05em">{{ rSub }}</div>
+        <div style="display: flex; gap: 10px; padding-top: 4px">
+          <div onClick="{{ accept }}" style="flex: 1; background: #2E2B26; padding: 14px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.2em; color: #FAF8F4; cursor: pointer">就吃這家</div>
+          <div onClick="{{ reject }}" style="border: 1px solid #C9C3B6; padding: 13px 18px; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">丟回</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="padding: 16px 26px 0; display: flex; flex-direction: column; gap: 11px">
+      <div onClick="{{ advance }}" style="border: 1px solid #2E2B26; padding: 14px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.24em; color: #2E2B26; cursor: pointer">{{ cta }}</div>
+      <div style="font-size: 11px; color: #9A9488; text-align: center; letter-spacing: 0.06em">{{ hint }}</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isStores }}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 0 26px; display: flex; flex-direction: column">
+      <sc-for list="{{ storeList }}" as="s" hint-placeholder-count="4">
+        <div style="padding: 14px 0; border-top: 1px solid #E6E1D8; display: flex; align-items: center; gap: 14px">
+          <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 19px; color: #C9C3B6; width: 26px">{{ s.count }}</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+            <div style="font-weight: 500; font-size: 15.5px; letter-spacing: 0.04em; color: #2E2B26">{{ s.name }}</div>
+            <div style="font-size: 11.5px; color: #9A9488; letter-spacing: 0.06em">{{ s.sub }}</div>
+          </div>
+          <sc-if value="{{ s.hasTag }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size: 11px; color: #46647F; border: 1px solid #C6D2DC; padding: 3px 8px; letter-spacing: 0.06em">{{ s.tag }}</div>
+          </sc-if>
+          <div onClick="{{ s.onDelete }}" style="font-size: 11.5px; color: #C4BFB2; cursor: pointer; letter-spacing: 0.06em">刪除</div>
+        </div>
+      </sc-for>
+      <div style="border-top: 1px solid #E6E1D8"></div>
+    </div>
+
+    <sc-if value="{{ hasFrozen }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 30px 26px 10px; display: flex; align-items: baseline; gap: 12px">
+        <div style="font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.14em">冷凍區</div>
+        <div style="font-size: 11px; color: #9A9488; letter-spacing: 0.06em">滿 15 天自動放回一次</div>
+      </div>
+      <div style="padding: 0 26px; display: flex; flex-direction: column">
+        <sc-for list="{{ frozenList }}" as="f" hint-placeholder-count="1">
+          <div style="padding: 13px 0; border-top: 1px solid #E6E1D8; display: flex; align-items: center; gap: 14px">
+            <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 15px; color: #C9C3B6; width: 26px">×3</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+              <div style="font-size: 15px; color: #6E6A5F; letter-spacing: 0.04em">{{ f.name }}</div>
+              <div style="font-size: 11px; color: #B5B0A3; letter-spacing: 0.06em">{{ f.sub }}</div>
+            </div>
+            <div onClick="{{ f.onRestore }}" style="font-size: 12px; color: #C25B45; cursor: pointer; letter-spacing: 0.08em">放回</div>
+          </div>
+        </sc-for>
+        <div style="border-top: 1px solid #E6E1D8"></div>
+      </div>
+    </sc-if>
+
+    <div style="padding: 26px 26px 0; display: flex; flex-direction: column; gap: 10px">
+      <div onClick="{{ goAdd }}" style="background: #2E2B26; padding: 14px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.24em; color: #FAF8F4; cursor: pointer">新增店家</div>
+      <div style="display: flex; gap: 10px">
+        <div onClick="{{ exportData }}" style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">匯出備份</div>
+        <label style="flex: 1; border: 1px solid #C9C3B6; padding: 12px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #4A463E; cursor: pointer">
+          匯入備份
+          <input type="file" accept="application/json" onChange="{{ importData }}" style="display: none">
+        </label>
+      </div>
+      <div style="font-size: 11px; color: #B5B0A3; letter-spacing: 0.05em; line-height: 1.8">資料只存在這支手機的瀏覽器裡。清除瀏覽資料會一併消失，建議每週匯出一次。</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 0 26px; display: flex; flex-direction: column; gap: 26px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 10.5px; letter-spacing: 0.26em; color: #9A9488">STORE NAME</div>
+        <input type="text" value="{{ formName }}" onChange="{{ setName }}" placeholder="店名" style="border: none; border-bottom: 1px solid #C9C3B6; background: transparent; padding: 8px 0; font-size: 19px; letter-spacing: 0.04em; color: #2E2B26; outline: none; width: 100%">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 10.5px; letter-spacing: 0.26em; color: #9A9488">單人價位</div>
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{ tierChips }}" as="c" hint-placeholder-count="4">
+            <div onClick="{{ c.onPick }}" style="flex: 1; cursor: pointer">
+              <sc-if value="{{ c.on }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #2E2B26; padding: 11px 0; text-align: center; font-family: 'Jost', sans-serif; font-size: 13px; color: #FAF8F4">{{ c.label }}</div>
+              </sc-if>
+              <sc-if value="{{ c.off }}" hint-placeholder-val="{{ true }}">
+                <div style="border: 1px solid #E6E1D8; padding: 10px 0; text-align: center; font-family: 'Jost', sans-serif; font-size: 13px; color: #6E6A5F">{{ c.label }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: 'Jost', sans-serif; font-weight: 300; font-size: 10.5px; letter-spacing: 0.26em; color: #9A9488">哪幾餐會去</div>
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{ mealChips }}" as="m" hint-placeholder-count="3">
+            <div onClick="{{ m.onToggle }}" style="flex: 1; cursor: pointer">
+              <sc-if value="{{ m.on }}" hint-placeholder-val="{{ true }}">
+                <div style="background: #2E2B26; padding: 12px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.14em; color: #FAF8F4">{{ m.label }}</div>
+              </sc-if>
+              <sc-if value="{{ m.off }}" hint-placeholder-val="{{ false }}">
+                <div style="border: 1px solid #E6E1D8; padding: 11px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.14em; color: #9A9488">{{ m.label }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 11px; color: #B5B0A3; letter-spacing: 0.05em">只有勾選的餐別會在扭蛋時抽到這家。</div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div onClick="{{ saveStore }}" style="flex: 1; background: #46647F; padding: 15px 0; text-align: center; font-family: 'Zen Old Mincho', serif; font-size: 16px; letter-spacing: 0.24em; color: #FAF8F4; cursor: pointer">加入池子</div>
+        <div onClick="{{ cancelAdd }}" style="border: 1px solid #C9C3B6; padding: 14px 20px; font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.1em; color: #6E6A5F; cursor: pointer">取消</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="flex: 1; min-height: 40px"></div>
+
+  <div style="position: sticky; bottom: 0; background: rgba(250,248,244,0.94); border-top: 1px solid #E6E1D8; padding: 15px 26px 26px; display: flex; gap: 26px">
+    <div onClick="{{ goToday }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer">
+      <div style="font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.1em; color: {{ navTodayColor }}">記錄</div>
+      <div style="width: 14px; height: 1px; background: {{ navTodayBar }}"></div>
+    </div>
+    <div onClick="{{ goGacha }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer">
+      <div style="font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.1em; color: {{ navGachaColor }}">扭蛋</div>
+      <div style="width: 14px; height: 1px; background: {{ navGachaBar }}"></div>
+    </div>
+    <div onClick="{{ goStores }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer">
+      <div style="font-family: 'Zen Old Mincho', serif; font-size: 15px; letter-spacing: 0.1em; color: {{ navStoresColor }}">店家</div>
+      <div style="width: 14px; height: 1px; background: {{ navStoresBar }}"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const KEY = 'gachashokudo.v1';
+const TIERS = [
+  { label: '＜100', max: 99 },
+  { label: '100–150', max: 150 },
+  { label: '150–200', max: 200 },
+  { label: '200＋', max: 99999 },
+];
+const CAPS = [
+  { label: '金額不限', max: 99999 },
+  { label: '≤ 100', max: 100 },
+  { label: '≤ 150', max: 150 },
+  { label: '≤ 200', max: 200 },
+];
+const SLOTS = [
+  { key: 'b', label: '早餐', short: '早', cd: 2 },
+  { key: 'l', label: '午餐', short: '午', cd: 3 },
+  { key: 'd', label: '晚餐', short: '晚', cd: 7 },
+];
+const SHELL = [
+  ['#E3C7A8', '#D4B592'],
+  ['#A9C1C9', '#8FAAB4'],
+  ['#D8C5DD', '#BFA7C6'],
+  ['#C7D3B2', '#AAB994'],
+  ['#EBD3A6', '#D6B981'],
+  ['#D9B8B0', '#C09A91'],
+];
+const JIT = [[0.44, 0], [0.52, 0.09], [0.47, 0.05], [0.58, 0.13], [0.5, 0.02], [0.55, 0.17], [0.62, 0.07]];
+const COINS_PER_SLOT = 5;
+const FREEZE_DAYS = 15;
+
+const iso = (d) => {
+  const t = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return t.toISOString().slice(0, 10);
+};
+const today = () => iso(new Date());
+const addDays = (dateStr, n) => {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return iso(d);
+};
+const dayGap = (a, b) => Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+
+class Component extends DCLogic {
+  state = {
+    view: 'today',
+    slot: 'l',
+    capIdx: 0,
+    phase: 'idle',
+    result: null,
+    spins: 0,
+    pickSlot: null,
+    form: { name: '', tier: 1, meals: { b: false, l: true, d: true } },
+    data: { stores: [], meals: [], coins: { date: today(), b: COINS_PER_SLOT, l: COINS_PER_SLOT, d: COINS_PER_SLOT } },
+  };
+
+  componentDidMount() {
+    let data = this.state.data;
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) data = Object.assign({}, data, JSON.parse(raw));
+    } catch (e) {}
+    data = this.rollDay(data);
+    data = this.thaw(data);
+    this.setState({ data });
+  }
+
+  componentWillUnmount() { clearTimeout(this.timer); }
+
+  rollDay(data) {
+    const t = today();
+    if (!data.coins || data.coins.date !== t) {
+      data.coins = { date: t, b: COINS_PER_SLOT, l: COINS_PER_SLOT, d: COINS_PER_SLOT };
+    }
+    return data;
+  }
+
+  thaw(data) {
+    const t = today();
+    data.stores = (data.stores || []).map((s) => {
+      if (s.frozenUntil && dayGap(s.frozenUntil, t) >= 0) {
+        return Object.assign({}, s, { frozenUntil: null, rejects: 0, returnedOnce: true });
+      }
+      return s;
+    });
+    return data;
+  }
+
+  save(data) {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+    this.setState({ data });
+  }
+
+  patchStore(id, patch) {
+    const data = this.state.data;
+    const stores = data.stores.map((s) => (s.id === id ? Object.assign({}, s, patch) : s));
+    this.save(Object.assign({}, data, { stores }));
+  }
+
+  storeById(id) { return this.state.data.stores.find((s) => s.id === id); }
+  slotDef(key) { return SLOTS.find((s) => s.key === key); }
+  mealFor(slot) { return this.state.data.meals.find((m) => m.date === today() && m.slot === slot); }
+
+  eligible(slot) {
+    const t = today();
+    const cap = CAPS[this.state.capIdx].max;
+    const cd = this.slotDef(slot).cd;
+    return this.state.data.stores.filter((s) => {
+      if (s.excluded || s.frozenUntil) return false;
+      if (!s.meals || !s.meals[slot]) return false;
+      if (s.verdict === 'no') return false;
+      if (TIERS[s.tier].max > cap) return false;
+      if (s.lastAte && dayGap(s.lastAte, t) < cd) return false;
+      return true;
+    });
+  }
+
+  go = (view) => () => this.setState({ view, phase: 'idle', result: null });
+  goToday = this.go('today');
+  goStores = this.go('stores');
+  goAdd = () => this.setState({ view: 'add', form: { name: '', tier: 1, meals: { b: false, l: true, d: true } } });
+  goGacha = () => this.setState({ view: 'gacha', phase: 'idle', result: null });
+  cancelAdd = () => this.setState({ view: this.state.data.stores.length ? 'stores' : 'today' });
+  cycleCap = () => this.setState((s) => ({ capIdx: (s.capIdx + 1) % CAPS.length, phase: 'idle', result: null }));
+
+  advance = () => {
+    const { phase, slot, data } = this.state;
+    if (phase === 'spin') return;
+    if (phase === 'dropped') { this.setState({ phase: 'open' }); return; }
+    const pool = this.eligible(slot);
+    if (!pool.length) return;
+    if ((data.coins[slot] || 0) <= 0) return;
+    const coins = Object.assign({}, data.coins);
+    coins[slot] = coins[slot] - 1;
+    this.save(Object.assign({}, data, { coins }));
+    this.setState({ phase: 'spin', result: null });
+    this.timer = setTimeout(() => {
+      const p = this.eligible(this.state.slot);
+      const pick = p[Math.floor(Math.random() * p.length)];
+      this.setState((s) => ({ phase: 'dropped', result: pick ? pick.id : null, spins: s.spins + 1 }));
+    }, 1500);
+  };
+
+  accept = () => {
+    const { result, slot, data } = this.state;
+    const s = this.storeById(result);
+    if (!s) return;
+    const t = today();
+    const meals = data.meals.filter((m) => !(m.date === t && m.slot === slot)).concat([{ date: t, slot, storeId: s.id }]);
+    const stores = data.stores.map((x) => (x.id === s.id ? Object.assign({}, x, { eaten: (x.eaten || 0) + 1, lastAte: t, rejects: 0 }) : x));
+    this.save(Object.assign({}, data, { meals, stores }));
+    this.setState({ view: 'today', phase: 'idle', result: null });
+  };
+
+  reject = () => {
+    const s = this.storeById(this.state.result);
+    if (!s) return;
+    const n = (s.rejects || 0) + 1;
+    if (n >= 3) {
+      if (s.returnedOnce) this.patchStore(s.id, { rejects: n, excluded: true });
+      else this.patchStore(s.id, { rejects: n, frozenUntil: addDays(today(), FREEZE_DAYS) });
+    } else {
+      this.patchStore(s.id, { rejects: n });
+    }
+    this.setState({ phase: 'idle', result: null });
+  };
+
+  openPick = (slot) => () => this.setState({ view: 'pick', pickSlot: slot });
+
+  recordManual = (slot, id) => () => {
+    const data = this.state.data;
+    const t = today();
+    const meals = data.meals.filter((m) => !(m.date === t && m.slot === slot)).concat([{ date: t, slot, storeId: id }]);
+    const stores = data.stores.map((x) => (x.id === id ? Object.assign({}, x, { eaten: (x.eaten || 0) + 1, lastAte: t }) : x));
+    this.save(Object.assign({}, data, { meals, stores }));
+    this.setState({ view: 'today', pickSlot: null });
+  };
+
+  clearMeal = (slot) => () => {
+    const data = this.state.data;
+    const t = today();
+    const m = data.meals.find((x) => x.date === t && x.slot === slot);
+    const meals = data.meals.filter((x) => !(x.date === t && x.slot === slot));
+    const stores = m ? data.stores.map((x) => (x.id === m.storeId ? Object.assign({}, x, { eaten: Math.max(0, (x.eaten || 1) - 1) }) : x)) : data.stores;
+    this.save(Object.assign({}, data, { meals, stores }));
+  };
+
+  setVerdict = (id, v) => () => this.patchStore(id, { verdict: v });
+
+  setName = (e) => {
+    const name = e.target.value;
+    this.setState((s) => ({ form: Object.assign({}, s.form, { name }) }));
+  };
+  setTier = (i) => () => this.setState((s) => ({ form: Object.assign({}, s.form, { tier: i }) }));
+  toggleMeal = (k) => () => this.setState((s) => {
+    const meals = Object.assign({}, s.form.meals);
+    meals[k] = !meals[k];
+    return { form: Object.assign({}, s.form, { meals }) };
+  });
+
+  saveStore = () => {
+    const f = this.state.form;
+    const name = (f.name || '').trim();
+    if (!name) return;
+    const store = {
+      id: 's' + Date.now(),
+      name,
+      tier: f.tier,
+      meals: Object.assign({}, f.meals),
+      eaten: 0,
+      lastAte: null,
+      verdict: null,
+      rejects: 0,
+      frozenUntil: null,
+      returnedOnce: false,
+      excluded: false,
+    };
+    const data = this.state.data;
+    this.save(Object.assign({}, data, { stores: data.stores.concat([store]) }));
+    this.setState({ view: 'stores', form: { name: '', tier: 1, meals: { b: false, l: true, d: true } } });
+  };
+
+  deleteStore = (id) => () => {
+    const data = this.state.data;
+    this.save(Object.assign({}, data, { stores: data.stores.filter((s) => s.id !== id) }));
+  };
+
+  restore = (id) => () => this.patchStore(id, { frozenUntil: null, rejects: 0, returnedOnce: true });
+
+  exportData = () => {
+    const blob = new Blob([JSON.stringify(this.state.data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'gacha-shokudo-' + today() + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  importData = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const parsed = JSON.parse(r.result);
+        if (parsed && parsed.stores) this.save(this.thaw(this.rollDay(parsed)));
+      } catch (err) {}
+    };
+    r.readAsText(file);
+  };
+
+  capsuleVals(poolCount) {
+    const { phase, spins } = this.state;
+    const spinning = phase === 'spin';
+    const dropped = phase === 'dropped' || phase === 'open';
+    const shown = Math.max(0, Math.min(7, poolCount) - (dropped ? 1 : 0));
+    const out = {};
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((k, i) => {
+      out['jit' + k] = spinning ? 'capJitter ' + JIT[i][0] + 's ease-in-out ' + JIT[i][1] + 's 3' : 'none';
+      out['op' + k] = i < shown ? 1 : 0;
+      out['col' + k] = SHELL[(i + spins) % SHELL.length][0];
+    });
+    const shell = SHELL[Math.max(0, spins - 1) % SHELL.length];
+    out.dropTop = shell[0];
+    out.dropBot = shell[1];
+    out.capsuleOp = dropped ? 1 : 0;
+    out.dropAnim = phase === 'dropped' ? 'capDrop 0.65s cubic-bezier(.34,1.4,.64,1) 1 both' : 'none';
+    out.shellLAnim = phase === 'open' ? 'shellL 0.45s cubic-bezier(.3,.8,.4,1) 1 both' : 'none';
+    out.shellRAnim = phase === 'open' ? 'shellR 0.45s cubic-bezier(.3,.8,.4,1) 1 both' : 'none';
+    out.bodyAnim = spinning ? 'softShake 0.34s ease-in-out 4' : 'none';
+    out.knobAnim = spinning ? 'knobTurn 1.5s cubic-bezier(.32,.06,.2,1) 1 both' : 'none';
+    return out;
+  }
+
+  renderVals() {
+    const { view, slot, capIdx, phase, result, data, form, pickSlot } = this.state;
+    const t = today();
+    const d = new Date();
+    const WD = ['日', '一', '二', '三', '四', '五', '六'];
+    const stores = data.stores || [];
+    const active = stores.filter((s) => !s.excluded);
+    const frozen = active.filter((s) => s.frozenUntil);
+    const pool = this.eligible(slot);
+    const coinsLeft = (data.coins && data.coins[slot]) || 0;
+    const res = result ? this.storeById(result) : null;
+    const titles = { today: '今日記錄', gacha: '今天吃什麼', stores: '我的店家', add: '新增店家', pick: '選一家店' };
+
+    const todayRows = SLOTS.map((sl) => {
+      const m = this.mealFor(sl.key);
+      const st = m ? this.storeById(m.storeId) : null;
+      return {
+        label: sl.short,
+        empty: !st,
+        filled: !!st,
+        name: st ? st.name : '',
+        sub: st ? TIERS[st.tier].label + (st.verdict === 'yes' ? ' · 還會再吃' : st.verdict === 'maybe' ? ' · 看情況' : st.verdict === 'no' ? ' · 不會再吃' : '') : '',
+        askVerdict: !!st && !st.verdict,
+        onGacha: () => this.setState({ view: 'gacha', slot: sl.key, phase: 'idle', result: null }),
+        onRecord: this.openPick(sl.key),
+        onClear: this.clearMeal(sl.key),
+        onYes: st ? this.setVerdict(st.id, 'yes') : null,
+        onMaybe: st ? this.setVerdict(st.id, 'maybe') : null,
+        onNo: st ? this.setVerdict(st.id, 'no') : null,
+      };
+    });
+
+    const pickSl = pickSlot || slot;
+    const pickList = active
+      .filter((s) => !s.frozenUntil && s.meals && s.meals[pickSl])
+      .map((s) => ({ name: s.name, tier: TIERS[s.tier].label, onPick: this.recordManual(pickSl, s.id) }));
+
+    const storeList = active.filter((s) => !s.frozenUntil).map((s) => {
+      const cd = s.lastAte ? Math.max(0, 7 - dayGap(s.lastAte, t)) : 0;
+      const mealTags = SLOTS.filter((x) => s.meals && s.meals[x.key]).map((x) => x.short).join('／');
+      return {
+        count: String(s.eaten || 0).padStart(2, '0'),
+        name: s.name,
+        sub: TIERS[s.tier].label + ' · ' + (mealTags || '未指定餐別'),
+        hasTag: !!s.lastAte && cd > 0,
+        tag: '冷卻 ' + cd + ' 天內',
+        onDelete: this.deleteStore(s.id),
+      };
+    });
+
+    const frozenList = frozen.map((s) => ({
+      name: s.name,
+      sub: '還有 ' + Math.max(0, dayGap(t, s.frozenUntil)) + ' 天回來',
+      onRestore: this.restore(s.id),
+    }));
+
+    const cta = phase === 'spin' ? '轉動中'
+      : phase === 'dropped' ? '剝開扭蛋'
+      : !pool.length ? '這個餐別沒有候選'
+      : coinsLeft <= 0 ? '這一餐的硬幣用完了'
+      : '投一枚硬幣，轉';
+
+    const hint = !pool.length
+      ? (active.length ? '調整金額上限，或這幾天吃過的都還在冷卻' : '池子還是空的，先去店家頁新增')
+      : coinsLeft <= 0 ? '一餐 5 枚，抽完就自己決定吧'
+      : phase === 'dropped' ? '點一下扭蛋打開'
+      : phase === 'open' ? '丟回會累計，滿 3 次進冷凍區 15 天'
+      : this.slotDef(slot).label + '冷卻 ' + this.slotDef(slot).cd + ' 天內不重複';
+
+    return Object.assign({}, this.capsuleVals(pool.length), {
+      dateLine: t.replace(/-/g, '.') + '　' + WD[d.getDay()],
+      viewTitle: titles[view] || '今天吃什麼',
+      poolLine: active.length ? active.length + ' STORES' : '',
+      isToday: view === 'today',
+      isGacha: view === 'gacha',
+      isStores: view === 'stores',
+      isAdd: view === 'add',
+      isPick: view === 'pick',
+      goToday: this.goToday,
+      goGacha: this.goGacha,
+      goStores: this.goStores,
+      goAdd: this.goAdd,
+      cancelAdd: this.cancelAdd,
+      navTodayColor: view === 'today' ? '#2E2B26' : '#C4BFB2',
+      navTodayBar: view === 'today' ? '#C25B45' : 'transparent',
+      navGachaColor: view === 'gacha' ? '#2E2B26' : '#C4BFB2',
+      navGachaBar: view === 'gacha' ? '#C25B45' : 'transparent',
+      navStoresColor: view === 'stores' || view === 'add' ? '#2E2B26' : '#C4BFB2',
+      navStoresBar: view === 'stores' || view === 'add' ? '#C25B45' : 'transparent',
+      todayRows,
+      totalMeals: (data.meals || []).length,
+      streakLine: active.length ? '池子 ' + active.length + ' 家' : '',
+      poolEmpty: !active.length,
+      pickHint: this.slotDef(pickSl).label + '　選一家',
+      pickList,
+      slotTabs: SLOTS.map((sl) => ({
+        label: sl.label,
+        on: slot === sl.key,
+        off: slot !== sl.key,
+        onPick: () => this.setState({ slot: sl.key, phase: 'idle', result: null }),
+      })),
+      capLabel: CAPS[capIdx].label,
+      eligibleLine: pool.length + ' 家候選',
+      coinsLeft,
+      cycleCap: this.cycleCap,
+      advance: this.advance,
+      accept: this.accept,
+      reject: this.reject,
+      hasResult: phase === 'open' && !!res,
+      rName: res ? res.name : '',
+      rSub: res ? TIERS[res.tier].label + (res.lastAte ? ' · 上次 ' + res.lastAte.slice(5).replace('-', '/') : ' · 還沒吃過') : '',
+      rTimes: res ? '第 ' + ((res.eaten || 0) + 1) + ' 次' : '',
+      rTag: res ? (res.eaten >= 5 ? 'REGULAR' : res.eaten >= 2 ? 'FAMILIAR' : 'NEW') : '',
+      cta,
+      hint,
+      storeList,
+      hasFrozen: frozen.length > 0,
+      frozenList,
+      exportData: this.exportData,
+      importData: this.importData,
+      formName: form.name,
+      setName: this.setName,
+      saveStore: this.saveStore,
+      tierChips: TIERS.map((x, i) => ({ label: x.label, on: form.tier === i, off: form.tier !== i, onPick: this.setTier(i) })),
+      mealChips: SLOTS.map((sl) => ({ label: sl.label, on: !!form.meals[sl.key], off: !form.meals[sl.key], onToggle: this.toggleMeal(sl.key) })),
+    });
+  }
+}
+</script>
+</body>
+</html>
